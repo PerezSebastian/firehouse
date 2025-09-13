@@ -32,6 +32,9 @@ gem 'unicorn'
 gem 'awesome_print'
 gem 'interactive_editor'
 
+gem 'execjs'
+gem 'therubyracer', platforms: :ruby
+
 gem 'sass-rails'
 gem 'coffee-rails'
 gem 'uglifier'
