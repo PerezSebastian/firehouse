@@ -24,8 +24,8 @@ RUN gem install bundler -v 1.17.3 \
 
 COPY . .
 
-# Copiar secrets.yml
-COPY config/secrets.yml config/secrets.yml
+# Copiar secrets.yml desde el Secret de Render
+COPY /etc/secrets/secrets.yml config/secrets.yml
 
 # Precompilar assets para producción
 RUN bundle exec rake assets:precompile RAILS_ENV=production
