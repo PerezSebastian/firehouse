@@ -1,27 +1,25 @@
-# Usamos Ruby 2.5.9
-FROM ruby:2.5.9
+FROM ruby:2.5.9-alpine
 
 MAINTAINER Sebastian Perez <psebastian10101010@gmail.com>
 
 # Dependencias del sistema necesarias
-RUN apt-get update -qq && apt-get install -y \
-    build-essential \
-    libpq-dev \
+RUN apk add --no-cache \
+    build-base \
+    postgresql-dev \
     nodejs \
     npm \
     yarn \
     imagemagick \
     git \
-    zlib1g-dev \
+    zlib-dev \
     libxml2-dev \
-    libxslt1-dev \
-    && rm -rf /var/lib/apt/lists/*
+    libxslt-dev \
+    bash
 
 # Instalar Bundler 1.17.3
 RUN gem install bundler -v 1.17.3
 
 # Crear directorio de la app
-RUN mkdir /firehouse
 WORKDIR /firehouse
 
 # Copiar Gemfile primero para aprovechar cache de Docker
@@ -33,7 +31,7 @@ RUN bundle _1.17.3_ install --jobs 8 --deployment
 # Copiar el resto de la app
 COPY . .
 
-# Configurar variables de entorno necesarias para Rails
+# Variables de entorno necesarias para Rails
 ARG SECRET_KEY_BASE
 ENV RAILS_ENV=production
 ENV SECRET_KEY_BASE=$SECRET_KEY_BASE
