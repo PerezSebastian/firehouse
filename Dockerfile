@@ -1,5 +1,5 @@
 # Usamos Ruby 2.5 con Debian Buster
-FROM ruby:2.5.9-slim
+FROM ruby:2.5.9-slim-bullseye
 
 # Instalar dependencias del sistema
 RUN apt-get update -qq && \
