@@ -1,5 +1,5 @@
-# Usamos Ruby 2.5 con Debian Buster
-FROM ruby:2.5.9-slim-bullseye
+# Usamos Ruby 2.5 con Debian Slim actual
+FROM ruby:2.5.9-slim
 
 # Instalar dependencias del sistema
 RUN apt-get update -qq && \
@@ -19,7 +19,7 @@ RUN bundle _2.1.4_ install --without development test
 # Copiar el resto del código
 COPY . .
 
-# Precompilar assets usando variables de entorno
+# Precompilar assets para producción usando variables de entorno
 ENV RAILS_ENV=production
 RUN bundle exec rake assets:precompile
 
