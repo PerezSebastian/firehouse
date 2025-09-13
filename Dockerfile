@@ -1,30 +1,53 @@
-FROM ruby:2.4-alpine
+# Usamos Ruby 2.5.9
+FROM ruby:2.5.9
 
-MAINTAINER Néstor Coppi <nestorcoppi@gmail.com>
+MAINTAINER Sebastian Perez <psebastian10101010@gmail.com>
 
-# Configuración de gems y dependencias
-RUN echo "gem: --no-rdoc --no-ri" >> ~/.gemrc \
-    && apk --update add --virtual build-dependencies build-base gcc postgresql-dev linux-headers libxml2 libxml2-dev libxml2-utils libxslt libxslt-dev \
-    && apk --update add libpq bash nodejs zlib tzdata git imagemagick \
-    && gem install bundler -v 1.17.3
+# Dependencias del sistema necesarias
+RUN apt-get update -qq && apt-get install -y \
+    build-essential \
+    libpq-dev \
+    nodejs \
+    npm \
+    yarn \
+    imagemagick \
+    git \
+    zlib1g-dev \
+    libxml2-dev \
+    libxslt1-dev \
+    && rm -rf /var/lib/apt/lists/*
 
+# Instalar Bundler 1.17.3
+RUN gem install bundler -v 1.17.3
+
+# Crear directorio de la app
+RUN mkdir /firehouse
 WORKDIR /firehouse
-ADD . .
 
-# Instalar las gems con Bundler 1.17.3
-RUN bundle _1.17.3_ install --deployment --jobs 8 \
-    && apk del build-dependencies
+# Copiar Gemfile primero para aprovechar cache de Docker
+COPY Gemfile Gemfile.lock ./
 
-# Crear tmp folder
+# Instalar gems con Bundler 1.17.3
+RUN bundle _1.17.3_ install --jobs 8 --deployment
+
+# Copiar el resto de la app
+COPY . .
+
+# Configurar variables de entorno necesarias para Rails
+ARG SECRET_KEY_BASE
+ENV RAILS_ENV=production
+ENV SECRET_KEY_BASE=$SECRET_KEY_BASE
+ENV NODE_ENV=production
+
+# Crear tmp folder requerido por Rails
 RUN mkdir -p /firehouse/tmp
 
-# Precompilar assets
-RUN bundle exec rake assets:precompile
+# Precompilar assets de Rails
+RUN bundle exec rake assets:precompile RAILS_ENV=production
 RUN bundle exec rake assets:clean
 
-# Variables de entorno necesarias
-ENV RAILS_ENV=production
-ENV PORT=3000
+# Exponer puerto para Render
+EXPOSE 3000
 
-# Ejecutar Puma directamente
+# Comando para arrancar Puma
 CMD ["bundle", "exec", "puma", "-t", "5:5", "-p", "3000", "-e", "production"]
