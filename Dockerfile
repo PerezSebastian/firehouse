@@ -19,8 +19,8 @@ RUN sed -i 's/deb.debian.org/archive.debian.org/g' /etc/apt/sources.list \
 WORKDIR /app
 COPY Gemfile Gemfile.lock ./
 
-RUN gem install bundler -v 2.4.22 \
- && bundle install --without development test
+RUN gem install bundler -v 2.3.26 \
+ && bundle _2.3.26_ install --without development test
 
 COPY . .
 
