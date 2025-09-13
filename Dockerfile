@@ -2,26 +2,29 @@ FROM ruby:2.4-alpine
 
 MAINTAINER Néstor Coppi <nestorcoppi@gmail.com>
 
+# Configuración de gems y dependencias
 RUN echo "gem: --no-rdoc --no-ri" >> ~/.gemrc \
     && apk --update add --virtual build-dependencies build-base gcc postgresql-dev linux-headers libxml2 libxml2-dev libxml2-utils libxslt libxslt-dev \
     && apk --update add libpq bash nodejs zlib tzdata git imagemagick \
-    && gem install bundler
-
-# RUN git clone --depth 2 https://github.com/Shelvak/firehouse /firehouse
+    && gem install bundler -v 1.17.3
 
 WORKDIR /firehouse
 ADD . .
 
-# RUN bundle config build.nokogiri --use-system-libraries && \
-RUN   bundle install --deployment --jobs 8 && \
-    apk del build-dependencies
+# Instalar las gems con Bundler 1.17.3
+RUN bundle _1.17.3_ install --deployment --jobs 8 \
+    && apk del build-dependencies
 
-# ENV SOCKETIO => así se compila todo acá
-
+# Crear tmp folder
 RUN mkdir -p /firehouse/tmp
 
-# RUN cp config/secrets.example.yml config/secrets.yml \
-#     && mkdir -p /firehouse/tmp \
-#     && bundle exec rake assets:precompile
+# Precompilar assets
+RUN bundle exec rake assets:precompile
+RUN bundle exec rake assets:clean
 
-CMD /firehouse/start.sh
+# Variables de entorno necesarias
+ENV RAILS_ENV=production
+ENV PORT=3000
+
+# Ejecutar Puma directamente
+CMD ["bundle", "exec", "puma", "-t", "5:5", "-p", "3000", "-e", "production"]
